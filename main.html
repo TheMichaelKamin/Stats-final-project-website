@@ -28,11 +28,11 @@
     <p>Welcome to Michael and Gautham's Final AP® Statistics Project</p>
     <p>In this game, you'll see words displayed in different colors.</p>
     <p>Your task is to click the button that corresponds to the color of the word, not the word itself.</p>
-    <p>there will be 20 questions, this should take around ~2 minutes to complete</p>
+    <p>there will be 20 questions, this should take around a minute to complete</p>
     <br>
     <p><b>PLEASE ATTEMPT TO ANSWER QUESTIONS ACCURATELY</b></p>
     <br>
-    <p>(ex. If the word says Red, but is colored Blue, click the Blue optiion)</p>
+    <p>(ex. If the word says Red, but is colored Blue, click the Blue option)</p>
     <button onclick="startGame()">Start Game</button>
 </div>
 <div id="game-container">
@@ -51,6 +51,7 @@
     let correctAnswers = 0;
     let totalAttempts = 0;
     let responses = [];
+    let startTime;
 
     function startGame() {
         document.getElementById('explanation').style.display = 'none'; // Hide explanation
@@ -66,35 +67,34 @@
         document.getElementById('word').textContent = word;
         document.getElementById('word').style.color = color;
 
-        let colorChanged = false;
-
         // Occasionally, set a different color than the word
         if (Math.random() < 0.3) {
             const mismatchColorIndex = (randomColorIndex + 1) % colors.length;
             document.getElementById('word').style.color = colors[mismatchColorIndex];
-            colorChanged = true;
         }
 
-        return colorChanged;
+        // Record start time
+        startTime = performance.now();
     }
 
     function checkAnswer(answer) {
         totalAttempts++;
-        const startTime = new Date().getTime(); // Record start time
+        const endTime = performance.now(); // Record end time
+        const responseTime = endTime - startTime; // Calculate response time
+
         const word = document.getElementById('word').textContent;
         const color = document.getElementById('word').style.color;
         const expectedColor = color.toLowerCase();
-        const endTime = new Date().getTime(); // Record end time
-        const responseTime = endTime - startTime;
 
-        const colorChanged = displayWord();
+        // Get user's IP address
+        const userIP = "<?php echo $_SERVER['REMOTE_ADDR']; ?>";
 
         const response = {
             word: word,
             color: color,
             answer: answer,
             responseTime: responseTime,
-            colorChanged: colorChanged // Add colorChanged flag to response
+            userIP: userIP // Include user's IP address in the response
         };
 
         responses.push(response);
@@ -105,6 +105,8 @@
 
         console.log(`Correct Answers: ${correctAnswers}/${totalAttempts}`);
         console.log(`Response Time: ${responseTime} ms`);
+
+        displayWord();
 
         if (totalAttempts % 20 === 0) {
             endGame();
