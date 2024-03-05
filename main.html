@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stroop Effect Game</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+    }
+    #explanation {
+        margin-top: 50px;
+    }
+    #game-container, #completion-screen {
+        margin-top: 50px;
+        display: none; /* Hide game container and completion screen initially */
+    }
+    .word {
+        font-size: 24px;
+        margin-bottom: 20px;
+    }
+</style>
+</head>
+<body>
+<h1>Stroop Effect Game</h1>
+<div id="explanation">
+    <p>Welcome to Michael and Gautham's Final AP® Statistics Project</p>
+    <p>In this game, you'll see words displayed in different colors.</p>
+    <p>Your task is to click the button that corresponds to the color of the word, not the word itself.</p>
+    <p>there will be 20 questions, this should take around ~2 minutes to complete</p>
+    <br>
+    <p><b>PLEASE ATTEMPT TO ANSWER QUESTIONS ACCURATELY</b></p>
+    <br>
+    <p>(ex. If the word says Red, but is colored Blue, click the Blue optiion)</p>
+    <button onclick="startGame()">Start Game</button>
+</div>
+<div id="game-container">
+    <p class="word" id="word"></p>
+    <button onclick="checkAnswer('red')">Red</button>
+    <button onclick="checkAnswer('green')">Green</button>
+    <button onclick="checkAnswer('blue')">Blue</button>
+</div>
+<div id="completion-screen">
+    <p>Congratulations! You've completed 20 answers.</p>
+    <p>Thank you for playing!</p>
+</div>
+<script>
+    const words = ['RED', 'GREEN', 'BLUE'];
+    const colors = ['red', 'green', 'blue'];
+    let correctAnswers = 0;
+    let totalAttempts = 0;
+    let responses = [];
+
+    function startGame() {
+        document.getElementById('explanation').style.display = 'none'; // Hide explanation
+        document.getElementById('game-container').style.display = 'block'; // Show game container
+        displayWord();
+    }
+
+    function displayWord() {
+        const randomWordIndex = Math.floor(Math.random() * words.length);
+        const randomColorIndex = Math.floor(Math.random() * colors.length);
+        const word = words[randomWordIndex];
+        const color = colors[randomColorIndex];
+        document.getElementById('word').textContent = word;
+        document.getElementById('word').style.color = color;
+
+        let colorChanged = false;
+
+        // Occasionally, set a different color than the word
+        if (Math.random() < 0.3) {
+            const mismatchColorIndex = (randomColorIndex + 1) % colors.length;
+            document.getElementById('word').style.color = colors[mismatchColorIndex];
+            colorChanged = true;
+        }
+
+        return colorChanged;
+    }
+
+    function checkAnswer(answer) {
+        totalAttempts++;
+        const startTime = new Date().getTime(); // Record start time
+        const word = document.getElementById('word').textContent;
+        const color = document.getElementById('word').style.color;
+        const expectedColor = color.toLowerCase();
+        const endTime = new Date().getTime(); // Record end time
+        const responseTime = endTime - startTime;
+
+        const colorChanged = displayWord();
+
+        const response = {
+            word: word,
+            color: color,
+            answer: answer,
+            responseTime: responseTime,
+            colorChanged: colorChanged // Add colorChanged flag to response
+        };
+
+        responses.push(response);
+
+        if (answer.toLowerCase() === expectedColor) {
+            correctAnswers++;
+        }
+
+        console.log(`Correct Answers: ${correctAnswers}/${totalAttempts}`);
+        console.log(`Response Time: ${responseTime} ms`);
+
+        if (totalAttempts % 20 === 0) {
+            endGame();
+        }
+    }
+
+    function endGame() {
+        document.getElementById('game-container').style.display = 'none'; // Hide game container
+        document.getElementById('completion-screen').style.display = 'block'; // Show completion screen
+        saveResponses();
+    }
+
+    function saveResponses() {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', 'save_responses.php');
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.send(JSON.stringify(responses));
+
+        // Reset responses array for the next run
+        responses = [];
+    }
+</script>
+</body>
+</html>
